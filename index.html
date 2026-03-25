@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady of Victory™ Self-Leadership System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --navy: #0d1b3e;
+    --navy-light: #1a2d5a;
+    --navy-mid: #152348;
+    --gold: #c9a84c;
+    --gold-light: #e8c96b;
+    --gold-pale: #f5e9c4;
+    --white: #ffffff;
+    --text-light: #d4c5a0;
+    --border: rgba(201,168,76,0.22);
+    --border-strong: rgba(201,168,76,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--gold); letter-spacing: 1px; }
+  .logo span { color: var(--white); font-size: 0.68rem; display: block; font-family: 'Montserrat', sans-serif; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .header-right { text-align: right; }
+  .header-date { font-size: 0.7rem; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+  .day-counter { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); margin-top: 2px; }
+
+  /* NAV */
+  nav { display: flex; background: var(--navy-mid); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  nav button {
+    flex: 1; min-width: 110px; padding: 13px 8px;
+    background: none; border: none; color: var(--text-light);
+    font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+    border-bottom: 3px solid transparent; transition: all 0.2s;
+  }
+  nav button:hover { color: var(--gold-light); }
+  nav button.active { color: var(--gold); border-bottom-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+  /* MAIN */
+  main { max-width: 920px; margin: 0 auto; padding: 26px 18px 70px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-header h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 4px; }
+  .page-header p { font-size: 0.75rem; color: var(--text-light); letter-spacing: 1px; }
+
+  /* CARDS */
+  .card { background: var(--navy-light); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+  .card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); margin-bottom: 14px; }
+  label { display: block; font-size: 0.68rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; margin-top: 14px; }
+  label:first-of-type { margin-top: 0; }
+  textarea, input[type="text"], select {
+    width: 100%; background: rgba(13,27,62,0.65); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--white); font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem; padding: 9px 12px; outline: none; resize: vertical; transition: border-color 0.2s;
+  }
+  textarea:focus, input[type="text"]:focus, select:focus { border-color: var(--gold); }
+  textarea { min-height: 76px; }
+  select option { background: var(--navy); }
+
+  /* 14-DAY TRACKER */
+  .tracker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 6px; }
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(13,27,62,0.5);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+    padding: 4px;
+  }
+  .day-cell:hover { border-color: var(--gold); }
+  .day-cell.today { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .day-cell.has-data { background: rgba(201,168,76,0.12); }
+  .day-cell.complete { background: rgba(201,168,76,0.18); border-color: var(--gold); }
+  .day-cell.future { opacity: 0.35; cursor: default; }
+  .day-num { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--white); line-height: 1; }
+  .day-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-top: 2px; }
+  .day-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-top: 3px; }
+  .day-cell.today .day-num { color: var(--gold); }
+  .week-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-light); margin-bottom: 8px; padding-left: 2px; }
+
+  /* STREAK BAR */
+  .streak-section { display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: rgba(201,168,76,0.06); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; }
+  .streak-number { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); line-height: 1; }
+  .streak-info { flex: 1; }
+  .streak-info .streak-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); }
+  .streak-info .streak-sub { font-size: 0.75rem; color: var(--white); margin-top: 3px; }
+  .streak-dots { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+  .sdot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+  .sdot.done { background: var(--gold); }
+  .sdot.today-dot { border: 2px solid var(--gold); background: transparent; }
+
+  /* SCALE */
+  .scale-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .scale-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(13,27,62,0.6); border: 1px solid var(--border); color: var(--text-light); font-size: 0.78rem; font-family: 'Montserrat', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .scale-btn:hover, .scale-btn.selected { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+
+  /* A.L.I.G.N. */
+  .align-step { border-left: 3px solid var(--border); padding-left: 16px; margin-bottom: 20px; transition: border-color 0.3s; }
+  .align-step.filled { border-left-color: var(--gold); }
+  .step-letter { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--gold); margin-bottom: 2px; }
+  .step-label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-light); margin-bottom: 7px; }
+
+  /* GOALS */
+  .goal-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: rgba(13,27,62,0.5); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 9px; transition: all 0.2s; }
+  .goal-item.done { opacity: 0.45; }
+  .goal-item.done .goal-text { text-decoration: line-through; color: var(--text-light); }
+  .goal-check { width: 20px; height: 20px; border: 2px solid var(--gold); border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--gold); transition: all 0.2s; margin-top: 2px; }
+  .goal-item.done .goal-check { background: var(--gold); color: var(--navy); }
+  .goal-text { flex: 1; font-size: 0.82rem; line-height: 1.5; }
+  .goal-tag { font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; background: rgba(201,168,76,0.14); color: var(--gold); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+  .goal-delete { cursor: pointer; color: var(--text-light); font-size: 0.75rem; padding: 2px 4px; opacity: 0.4; transition: opacity 0.2s; }
+  .goal-delete:hover { opacity: 1; color: #e87070; }
+
+  /* WINS */
+  .win-entry { padding: 14px 16px; background: rgba(13,27,62,0.5); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
+  .win-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .win-date { font-size: 0.64rem; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+  .win-category { font-size: 0.6rem; padding: 2px 9px; border-radius: 20px; background: rgba(201,168,76,0.14); color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+  .win-text { font-size: 0.82rem; line-height: 1.6; color: var(--white); }
+  .win-delete { cursor: pointer; color: var(--text-light); font-size: 0.75rem; opacity: 0.4; transition: opacity 0.2s; }
+  .win-delete:hover { opacity: 1; color: #e87070; }
+
+  /* BUTTONS */
+  .btn-primary { background: var(--gold); color: var(--navy); border: none; border-radius: 7px; padding: 11px 22px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 7px; padding: 10px 18px; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-secondary:hover { background: rgba(201,168,76,0.1); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+  /* DECLARATION */
+  .declaration-banner { background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.03) 100%); border: 1px solid var(--border-strong); border-radius: 10px; padding: 20px 24px; text-align: center; margin-bottom: 22px; }
+  .declaration-banner p { font-family: 'Playfair Display', serif; font-size: 0.92rem; line-height: 2; color: var(--gold-light); font-style: italic; }
+  .declaration-banner .tagline { font-family: 'Montserrat', sans-serif; font-size: 0.63rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-top: 8px; font-style: normal; }
+
+  /* HABIT */
+  .habit-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .habit-row:last-child { border-bottom: none; }
+  .habit-name { flex: 1; font-size: 0.81rem; }
+  .habit-check-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: transparent; color: var(--text-light); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .habit-check-btn.done { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+
+  /* WEEKLY REVIEW */
+  .review-day { padding: 14px 16px; background: rgba(13,27,62,0.45); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s; }
+  .review-day:hover { border-color: var(--gold); }
+  .review-day-header { display: flex; justify-content: space-between; align-items: center; }
+  .review-day-title { font-family: 'Playfair Display', serif; font-size: 0.9rem; color: var(--white); }
+  .review-day-badges { display: flex; gap: 6px; }
+  .badge { font-size: 0.58rem; padding: 2px 8px; border-radius: 12px; letter-spacing: 1px; text-transform: uppercase; }
+  .badge-gold { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .badge-gray { background: rgba(255,255,255,0.07); color: var(--text-light); }
+  .review-day-body { margin-top: 10px; display: none; }
+  .review-day-body.open { display: block; }
+  .review-field { margin-bottom: 8px; }
+  .review-field .rf-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); margin-bottom: 3px; }
+  .review-field .rf-val { font-size: 0.8rem; color: var(--white); line-height: 1.5; }
+  .score-pill { display: inline-flex; gap: 12px; background: rgba(201,168,76,0.08); border-radius: 20px; padding: 6px 14px; margin-top: 6px; }
+  .score-item { font-size: 0.7rem; color: var(--gold); text-align: center; }
+  .score-item span { display: block; font-size: 0.58rem; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* PROGRESS OVERVIEW */
+  .overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  .ov-block { padding: 16px 18px; background: var(--navy-light); border: 1px solid var(--border); border-radius: 10px; }
+  .ov-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--gold); line-height: 1; }
+  .ov-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); margin-top: 4px; }
+  .prog-bar-bg { background: rgba(13,27,62,0.6); border-radius: 20px; height: 5px; margin-top: 8px; }
+  .prog-bar-fill { height: 5px; border-radius: 20px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.6s; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 36px 20px; color: var(--text-light); font-size: 0.78rem; letter-spacing: 1px; }
+  .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 11px 26px; border-radius: 30px; opacity: 0; pointer-events: none; transition: opacity 0.3s; white-space: nowrap; z-index: 999; }
+  #toast.show { opacity: 1; }
+
+  .section-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  @media (max-width: 580px) {
+    .tracker-grid { gap: 5px; }
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+    .day-num { font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lady of Victory™ <span>Self-Leadership System</span></div>
+  <div class="header-right">
+    <div class="header-date" id="headerDate"></div>
+    <div class="day-counter" id="dayCounter"></div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('checkin', this)">☀ Check-In</button>
+  <button onclick="showTab('align', this)">✦ A.L.I.G.N.</button>
+  <button onclick="showTab('goals', this)">◎ Priorities</button>
+  <button onclick="showTab('wins', this)">★ Wins</button>
+  <button onclick="showTab('overview', this)">◈ 14-Day View</button>
+</nav>
+
+<main>
+
+  <!-- ===== CHECK-IN ===== -->
+  <section class="section active" id="tab-checkin">
+    <div class="page-header">
+      <h2>Daily Check-In</h2>
+      <p>How you start is how you lead. Choose yourself first.</p>
+    </div>
+
+    <div class="declaration-banner">
+      <p>I am a Lady of Victory.<br>My victory is not external.<br>It was always inside me.<br>And I choose myself. First.</p>
+      <div class="tagline">Responsibilities… Are not my identity.</div>
+    </div>
+
+    <!-- Streak -->
+    <div class="streak-section">
+      <div class="streak-number" id="streakNum">0</div>
+      <div class="streak-info">
+        <div class="streak-title">Day Streak</div>
+        <div class="streak-sub" id="streakSub">Start your streak today.</div>
+        <div class="streak-dots" id="streakDots"></div>
+      </div>
+    </div>
+
+    <!-- 14-day grid -->
+    <div class="card">
+      <h3>14-Day Tracker</h3>
+      <div class="week-label">Week 1</div>
+      <div class="tracker-grid" id="grid-week1"></div>
+      <div class="week-label" style="margin-top:14px;">Week 2</div>
+      <div class="tracker-grid" id="grid-week2"></div>
+    </div>
+
+    <!-- Energy scan -->
+    <div class="card">
+      <h3>Energy & Alignment Scan</h3>
+      <label>Mental Energy — How clear is your mind?</label>
+      <div class="scale-row" id="scale-mental"></div>
+      <label>Emotional Energy — How grounded do you feel?</label>
+      <div class="scale-row" id="scale-emotional"></div>
+      <label>Physical Energy — How is your body today?</label>
+      <div class="scale-row" id="scale-physical"></div>
+      <label>Leadership Energy — How ready are you to lead yourself?</label>
+      <div class="scale-row" id="scale-leadership"></div>
+    </div>
+
+    <!-- Intention -->
+    <div class="card">
+      <h3>Today's Intention</h3>
+      <label>My word / theme for today</label>
+      <input type="text" id="checkin-word" placeholder="e.g. Clarity, Boldness, Rest, Focus…">
+      <label>What does choosing myself look like today?</label>
+      <textarea id="checkin-choose" placeholder="Write your intention here…"></textarea>
+      <label>The ONE thing I must do to honor my authority today</label>
+      <textarea id="checkin-one" placeholder="Be specific…" style="min-height:60px;"></textarea>
+    </div>
+
+    <!-- Habits -->
+    <div class="card">
+      <h3>Daily Practices</h3>
+      <div id="habit-list"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveCheckin()">Save Today's Check-In</button>
+    </div>
+  </section>
+
+  <!-- ===== A.L.I.G.N. ===== -->
+  <section class="section" id="tab-align">
+    <div class="page-header">
+      <h2>A.L.I.G.N. Method™</h2>
+      <p>Installation, not inspiration. Work the method.</p>
+    </div>
+
+    <div class="card" style="border-color:var(--border-strong);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--gold);line-height:1;">A.L.I.G.N.</div>
+        <div style="font-size:0.65rem;color:var(--text-light);letter-spacing:1.5px;text-transform:uppercase;line-height:2;">Acknowledge · Look · Introduce · Guide · Name</div>
+      </div>
+
+      <div class="align-step" id="step-A">
+        <div class="step-letter">A — Acknowledge</div>
+        <div class="step-label">What is actually happening right now? Name it without judgment.</div>
+        <textarea id="align-A" placeholder="I acknowledge that…" oninput="markStep('A')"></textarea>
+      </div>
+      <div class="align-step" id="step-L">
+        <div class="step-letter">L — Look</div>
+        <div class="step-label">What is the root belief or pattern underneath this?</div>
+        <textarea id="align-L" placeholder="When I look deeper, I see…" oninput="markStep('L')"></textarea>
+      </div>
+      <div class="align-step" id="step-I">
+        <div class="step-letter">I — Introduce</div>
+        <div class="step-label">What new truth do you want to introduce to yourself?</div>
+        <textarea id="align-I" placeholder="I am introducing the truth that…" oninput="markStep('I')"></textarea>
+      </div>
+      <div class="align-step" id="step-G">
+        <div class="step-letter">G — Guide</div>
+        <div class="step-label">How will you guide yourself forward from this truth today?</div>
+        <textarea id="align-G" placeholder="I will guide myself by…" oninput="markStep('G')"></textarea>
+      </div>
+      <div class="align-step" id="step-N">
+        <div class="step-letter">N — Name</div>
+        <div class="step-label">Name who you are choosing to be on the other side of this.</div>
+        <textarea id="align-N" placeholder="I am naming myself as…" oninput="markStep('N')"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveAlign()">Save This Session</button>
+        <button class="btn-secondary" onclick="clearAlign()">Clear & Reset</button>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:14px;">Session History</h3>
+    <div id="align-history"></div>
+  </section>
+
+  <!-- ===== GOALS ===== -->
+  <section class="section" id="tab-goals">
+    <div class="page-header">
+      <h2>Priorities & Goals</h2>
+      <p>Leading yourself means deciding what matters — and protecting it.</p>
+    </div>
+
+    <div class="card">
+      <h3>Add a Priority</h3>
+      <label>Priority / Goal</label>
+      <input type="text" id="goal-input" placeholder="What are you committed to?" onkeydown="if(event.key==='Enter') addGoal()">
+      <label>Category</label>
+      <select id="goal-cat">
+        <option value="Business">Business</option>
+        <option value="Personal">Personal</option>
+        <option value="Health">Health</option>
+        <option value="Relationships">Relationships</option>
+        <option value="Spiritual">Spiritual</option>
+        <option value="A.I.I. Program">A.I.I. Program</option>
+      </select>
+      <label>Timeframe</label>
+      <select id="goal-time">
+        <option value="Today">Today</option>
+        <option value="This Week">This Week</option>
+        <option value="14 Days">14 Days</option>
+        <option value="This Month">This Month</option>
+        <option value="90 Days">90 Days</option>
+      </select>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="addGoal()">Add Priority</button>
+      </div>
+    </div>
+
+    <div id="goal-sections"></div>
+  </section>
+
+  <!-- ===== WINS ===== -->
+  <section class="section" id="tab-wins">
+    <div class="page-header">
+      <h2>Wins Journal</h2>
+      <p>Victory is built in the recording of it.</p>
+    </div>
+
+    <div class="card">
+      <h3>Record a Win</h3>
+      <textarea id="win-input" placeholder="What happened? What did you do? What did you choose?…"></textarea>
+      <label>Category</label>
+      <select id="win-cat">
+        <option value="Self-Leadership">Self-Leadership</option>
+        <option value="Business">Business</option>
+        <option value="Mindset">Mindset</option>
+        <option value="Relationship">Relationship</option>
+        <option value="Health">Health & Body</option>
+        <option value="Faith">Faith</option>
+      </select>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="addWin()">Record This Win</button>
+      </div>
+    </div>
+
+    <div id="wins-list"></div>
+  </section>
+
+  <!-- ===== 14-DAY OVERVIEW ===== -->
+  <section class="section" id="tab-overview">
+    <div class="page-header">
+      <h2>14-Day Overview</h2>
+      <p>Your full two-week record of self-leadership.</p>
+    </div>
+
+    <div class="overview-grid">
+      <div class="ov-block">
+        <div class="ov-val" id="ov-checkins">0</div>
+        <div class="ov-label">Check-Ins</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="pb-checkins" style="width:0%"></div></div>
+      </div>
+      <div class="ov-block">
+        <div class="ov-val" id="ov-aligns">0</div>
+        <div class="ov-label">A.L.I.G.N. Sessions</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="pb-aligns" style="width:0%"></div></div>
+      </div>
+      <div class="ov-block">
+        <div class="ov-val" id="ov-goals">0</div>
+        <div class="ov-label">Goals Completed</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="pb-goals" style="width:0%"></div></div>
+      </div>
+      <div class="ov-block">
+        <div class="ov-val" id="ov-wins">0</div>
+        <div class="ov-label">Wins Recorded</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="pb-wins" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:14px;">Daily Log — Click a Day to Expand</h3>
+    <div id="overview-days"></div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ========== STATE ==========
+const START_DATE_KEY = 'lov_start_date';
+const STATE_KEY = 'lov_14day_v2';
+
+let startDate = localStorage.getItem(START_DATE_KEY);
+if (!startDate) {
+  startDate = todayStr();
+  localStorage.setItem(START_DATE_KEY, startDate);
+}
+
+let state = JSON.parse(localStorage.getItem(STATE_KEY) || 'null') || {
+  checkins: {},   // keyed by dateStr
+  aligns: [],
+  goals: [],
+  wins: [],
+  habits: ['Morning declaration', 'A.L.I.G.N. practice', 'No reactive obligations before noon', '10 min stillness'],
+  scales: { mental: null, emotional: null, physical: null, leadership: null }
+};
+
+function save() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function dateLabel(ds) {
+  const d = new Date(ds + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function dayOfCycle(ds) {
+  const start = new Date(startDate + 'T12:00:00');
+  const target = new Date(ds + 'T12:00:00');
+  return Math.round((target - start) / 86400000) + 1;
+}
+
+// ========== 14 DAYS ARRAY ==========
+function get14Days() {
+  const days = [];
+  const start = new Date(startDate + 'T12:00:00');
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  return days;
+}
+
+// ========== HEADER ==========
+function updateHeader() {
+  const today = todayStr();
+  document.getElementById('headerDate').textContent = dateLabel(today);
+  const dayNum = dayOfCycle(today);
+  if (dayNum >= 1 && dayNum <= 14) {
+    document.getElementById('dayCounter').textContent = `Day ${dayNum} of 14`;
+  }
+}
+updateHeader();
+
+// ========== TABS ==========
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'overview') renderOverview();
+}
+
+// ========== STREAK ==========
+function calcStreak() {
+  const days = get14Days();
+  const today = todayStr();
+  let streak = 0;
+  for (let i = days.indexOf(today); i >= 0; i--) {
+    if (state.checkins[days[i]]) streak++;
+    else break;
+  }
+  return streak;
+}
+function renderStreak() {
+  const streak = calcStreak();
+  document.getElementById('streakNum').textContent = streak;
+  document.getElementById('streakSub').textContent = streak === 0
+    ? 'Start your streak today.' : streak === 14
+    ? 'Perfect 14-day streak. Lady of Victory.' : `${streak} day${streak > 1 ? 's' : ''} of consistent self-leadership.`;
+
+  const days = get14Days();
+  const today = todayStr();
+  const dots = document.getElementById('streakDots');
+  dots.innerHTML = days.map(d => {
+    const isToday = d === today;
+    const isDone = !!state.checkins[d];
+    const isPast = d < today;
+    if (isToday) return `<div class="sdot today-dot"></div>`;
+    if (isDone) return `<div class="sdot done"></div>`;
+    if (isPast) return `<div class="sdot"></div>`;
+    return `<div class="sdot" style="opacity:0.2;"></div>`;
+  }).join('');
+}
+
+// ========== 14-DAY GRID ==========
+function renderGrid() {
+  const days = get14Days();
+  const today = todayStr();
+  ['week1', 'week2'].forEach((wk, wi) => {
+    const grid = document.getElementById('grid-' + wk);
+    grid.innerHTML = '';
+    days.slice(wi * 7, wi * 7 + 7).forEach(ds => {
+      const d = new Date(ds + 'T12:00:00');
+      const dayN = d.getDate();
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const ci = state.checkins[ds];
+      const isFuture = ds > today;
+      const isToday = ds === today;
+      const cell = document.createElement('div');
+      cell.className = 'day-cell' + (isToday ? ' today' : '') + (isFuture ? ' future' : '') + (ci ? ' has-data' : '');
+      cell.innerHTML = `<div class="day-num">${dayN}</div><div class="day-label">${dayName}</div>${ci ? '<div class="day-dot"></div>' : ''}`;
+      if (!isFuture) cell.onclick = () => { showTab('overview', document.querySelector('nav button:last-child')); setTimeout(() => expandDay(ds), 100); };
+      grid.appendChild(cell);
+    });
+  });
+}
+
+// ========== SCALES ==========
+['mental', 'emotional', 'physical', 'leadership'].forEach(key => {
+  const container = document.getElementById('scale-' + key);
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.textContent = i;
+    btn.onclick = () => { state.scales[key] = i; renderScales(); };
+    container.appendChild(btn);
+  }
+});
+function renderScales() {
+  ['mental', 'emotional', 'physical', 'leadership'].forEach(key => {
+    document.querySelectorAll(`#scale-${key} .scale-btn`).forEach((b, i) => b.classList.toggle('selected', state.scales[key] === i + 1));
+  });
+}
+
+// Load today's scales if already checked in
+function loadTodayCheckin() {
+  const ci = state.checkins[todayStr()];
+  if (ci) {
+    if (ci.scales) { state.scales = { ...ci.scales }; renderScales(); }
+    if (ci.word) document.getElementById('checkin-word').value = ci.word;
+    if (ci.choose) document.getElementById('checkin-choose').value = ci.choose;
+    if (ci.one) document.getElementById('checkin-one').value = ci.one;
+  }
+}
+loadTodayCheckin();
+
+// ========== HABITS ==========
+function renderHabits() {
+  const today = todayStr();
+  const ci = state.checkins[today];
+  const done = ci?.habits || [];
+  document.getElementById('habit-list').innerHTML = state.habits.map((h, i) =>
+    `<div class="habit-row">
+      <div class="habit-name">${h}</div>
+      <button class="habit-check-btn ${done.includes(i) ? 'done' : ''}" onclick="toggleHabit(${i})">${done.includes(i) ? '✓' : ''}</button>
+    </div>`
+  ).join('');
+}
+function toggleHabit(i) {
+  const today = todayStr();
+  if (!state.checkins[today]) state.checkins[today] = { date: today, habits: [] };
+  const h = state.checkins[today].habits;
+  if (h.includes(i)) state.checkins[today].habits = h.filter(x => x !== i);
+  else h.push(i);
+  save(); renderHabits(); renderStreak(); renderGrid();
+}
+renderHabits();
+
+// ========== CHECK-IN SAVE ==========
+function saveCheckin() {
+  const today = todayStr();
+  if (!state.checkins[today]) state.checkins[today] = { date: today, habits: [] };
+  state.checkins[today].scales = { ...state.scales };
+  state.checkins[today].word = document.getElementById('checkin-word').value;
+  state.checkins[today].choose = document.getElementById('checkin-choose').value;
+  state.checkins[today].one = document.getElementById('checkin-one').value;
+  save(); renderStreak(); renderGrid(); toast('Check-in saved. Day ' + dayOfCycle(today) + ' of 14. ✓');
+}
+
+// ========== A.L.I.G.N. ==========
+function markStep(l) {
+  const v = document.getElementById('align-' + l).value;
+  document.getElementById('step-' + l).classList.toggle('filled', v.trim().length > 0);
+}
+function saveAlign() {
+  const letters = ['A','L','I','G','N'];
+  const entry = { date: Date.now(), steps: {} };
+  let filled = 0;
+  letters.forEach(l => { entry.steps[l] = document.getElementById('align-' + l).value; if (entry.steps[l].trim()) filled++; });
+  if (!filled) { toast('Fill in at least one step.'); return; }
+  state.aligns.unshift(entry);
+  save(); renderAlignHistory(); toast('A.L.I.G.N. session saved. ✓');
+}
+function clearAlign() {
+  ['A','L','I','G','N'].forEach(l => { document.getElementById('align-' + l).value = ''; document.getElementById('step-' + l).classList.remove('filled'); });
+}
+function renderAlignHistory() {
+  const el = document.getElementById('align-history');
+  if (!state.aligns.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">✦</div>No sessions yet. Work the method.</div>'; return; }
+  el.innerHTML = state.aligns.slice(0, 10).map((a, idx) =>
+    `<div class="card" style="padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:0.65rem;color:var(--text-light);letter-spacing:1px;text-transform:uppercase;">${new Date(a.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        <span onclick="deleteAlign(${idx})" style="cursor:pointer;color:var(--text-light);font-size:0.72rem;opacity:0.45;" onmouseover="this.style.opacity=1;this.style.color='#e87070'" onmouseout="this.style.opacity=0.45;this.style.color='var(--text-light)'">✕ Remove</span>
+      </div>
+      ${['A','L','I','G','N'].filter(l => a.steps[l]).map(l =>
+        `<div style="margin-bottom:7px;"><div style="font-size:0.62rem;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;">${l}</div><div style="font-size:0.78rem;color:var(--text-light);line-height:1.5;">${a.steps[l]}</div></div>`
+      ).join('')}
+    </div>`
+  ).join('');
+}
+function deleteAlign(idx) { state.aligns.splice(idx, 1); save(); renderAlignHistory(); }
+renderAlignHistory();
+
+// ========== GOALS ==========
+function addGoal() {
+  const text = document.getElementById('goal-input').value.trim();
+  if (!text) { toast('Enter a priority first.'); return; }
+  state.goals.push({ id: Date.now(), text, cat: document.getElementById('goal-cat').value, time: document.getElementById('goal-time').value, done: false });
+  document.getElementById('goal-input').value = '';
+  save(); renderGoals(); toast('Priority added. ✓');
+}
+function toggleGoal(id) { const g = state.goals.find(x => x.id === id); if (g) { g.done = !g.done; save(); renderGoals(); } }
+function deleteGoal(id) { state.goals = state.goals.filter(x => x.id !== id); save(); renderGoals(); }
+function renderGoals() {
+  const el = document.getElementById('goal-sections');
+  const timeframes = ['Today', 'This Week', '14 Days', 'This Month', '90 Days'];
+  if (!state.goals.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">◎</div>No priorities set yet. Lead yourself by deciding.</div>'; return; }
+  el.innerHTML = timeframes.map(tf => {
+    const items = state.goals.filter(g => g.time === tf);
+    if (!items.length) return '';
+    return `<div style="margin-bottom:20px;"><div style="font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;padding-left:2px;">${tf}</div>
+      ${items.map(g => `<div class="goal-item ${g.done ? 'done' : ''}">
+        <div class="goal-check" onclick="toggleGoal(${g.id})">${g.done ? '✓' : ''}</div>
+        <div class="goal-text">${g.text}</div>
+        <span class="goal-tag">${g.cat}</span>
+        <span class="goal-delete" onclick="deleteGoal(${g.id})">✕</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+renderGoals();
+
+// ========== WINS ==========
+function addWin() {
+  const text = document.getElementById('win-input').value.trim();
+  if (!text) { toast('Describe your win first.'); return; }
+  state.wins.unshift({ id: Date.now(), text, cat: document.getElementById('win-cat').value, date: Date.now() });
+  document.getElementById('win-input').value = '';
+  save(); renderWins(); toast('Win recorded. Victory documented. ✓');
+}
+function deleteWin(id) { state.wins = state.wins.filter(x => x.id !== id); save(); renderWins(); }
+function renderWins() {
+  const el = document.getElementById('wins-list');
+  if (!state.wins.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">★</div>No wins recorded yet. You have some. Write them down.</div>'; return; }
+  el.innerHTML = state.wins.map(w =>
+    `<div class="win-entry">
+      <div class="win-entry-header">
+        <span class="win-date">${new Date(w.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span>
+        <div style="display:flex;gap:10px;align-items:center;"><span class="win-category">${w.cat}</span><span class="win-delete" onclick="deleteWin(${w.id})">✕</span></div>
+      </div>
+      <div class="win-text">${w.text}</div>
+    </div>`
+  ).join('');
+}
+renderWins();
+
+// ========== OVERVIEW ==========
+let expandedDay = null;
+function expandDay(ds) {
+  expandedDay = ds;
+  renderOverview();
+  const el = document.querySelector(`[data-day="${ds}"] .review-day-body`);
+  if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+}
+function renderOverview() {
+  const days = get14Days();
+  const today = todayStr();
+  const totalCI = Object.keys(state.checkins).filter(d => days.includes(d) && state.checkins[d]).length;
+  const totalAlign = state.aligns.filter(a => { const ds = new Date(a.date).toISOString().split('T')[0]; return days.includes(ds); }).length;
+  const doneGoals = state.goals.filter(g => g.done).length;
+  const winsIn14 = state.wins.filter(w => { const ds = new Date(w.date).toISOString().split('T')[0]; return days.includes(ds); }).length;
+
+  document.getElementById('ov-checkins').textContent = totalCI;
+  document.getElementById('ov-aligns').textContent = totalAlign;
+  document.getElementById('ov-goals').textContent = doneGoals;
+  document.getElementById('ov-wins').textContent = winsIn14;
+  document.getElementById('pb-checkins').style.width = (totalCI / 14 * 100) + '%';
+  document.getElementById('pb-aligns').style.width = Math.min(totalAlign / 14 * 100, 100) + '%';
+  document.getElementById('pb-goals').style.width = Math.min(doneGoals / Math.max(state.goals.length, 1) * 100, 100) + '%';
+  document.getElementById('pb-wins').style.width = Math.min(winsIn14 / 14 * 100, 100) + '%';
+
+  const el = document.getElementById('overview-days');
+  el.innerHTML = days.map(ds => {
+    const ci = state.checkins[ds];
+    const isPast = ds <= today;
+    const isToday = ds === today;
+    const dayN = dayOfCycle(ds);
+    const dayAligns = state.aligns.filter(a => new Date(a.date).toISOString().split('T')[0] === ds);
+    const dayWins = state.wins.filter(w => new Date(w.date).toISOString().split('T')[0] === ds);
+    const isExpanded = expandedDay === ds;
+
+    const badges = [];
+    if (ci) badges.push(`<span class="badge badge-gold">✓ Checked In</span>`);
+    if (dayAligns.length) badges.push(`<span class="badge badge-gold">✦ A.L.I.G.N.</span>`);
+    if (dayWins.length) badges.push(`<span class="badge badge-gold">★ ${dayWins.length} Win${dayWins.length > 1 ? 's' : ''}</span>`);
+    if (!isPast) badges.push(`<span class="badge badge-gray">Upcoming</span>`);
+    else if (!ci && !dayAligns.length && !dayWins.length) badges.push(`<span class="badge badge-gray">No data</span>`);
+
+    let body = '';
+    if (isPast) {
+      body += `<div class="review-day-body ${isExpanded ? 'open' : ''}">`;
+      if (ci) {
+        const sc = ci.scales || {};
+        body += `<div class="review-field"><div class="rf-label">Energy Scan</div>
+          <div class="score-pill">
+            ${sc.mental ? `<div class="score-item">${sc.mental}<span>Mental</span></div>` : ''}
+            ${sc.emotional ? `<div class="score-item">${sc.emotional}<span>Emotional</span></div>` : ''}
+            ${sc.physical ? `<div class="score-item">${sc.physical}<span>Physical</span></div>` : ''}
+            ${sc.leadership ? `<div class="score-item">${sc.leadership}<span>Leadership</span></div>` : ''}
+          </div></div>`;
+        if (ci.word) body += `<div class="review-field"><div class="rf-label">Word for the Day</div><div class="rf-val">${ci.word}</div></div>`;
+        if (ci.choose) body += `<div class="review-field"><div class="rf-label">Choosing Myself</div><div class="rf-val">${ci.choose}</div></div>`;
+        if (ci.one) body += `<div class="review-field"><div class="rf-label">The One Thing</div><div class="rf-val">${ci.one}</div></div>`;
+        const hDone = ci.habits?.length || 0;
+        body += `<div class="review-field"><div class="rf-label">Daily Practices</div><div class="rf-val">${hDone} of ${state.habits.length} completed</div></div>`;
+      }
+      if (dayAligns.length) {
+        body += `<div class="review-field"><div class="rf-label">A.L.I.G.N. Sessions (${dayAligns.length})</div>`;
+        dayAligns.forEach(a => {
+          body += ['A','L','I','G','N'].filter(l => a.steps[l]).map(l =>
+            `<div style="margin-top:6px;"><span style="font-size:0.6rem;color:var(--gold);letter-spacing:1px;text-transform:uppercase;">${l} — </span><span style="font-size:0.78rem;color:var(--text-light);">${a.steps[l]}</span></div>`
+          ).join('');
+        });
+        body += `</div>`;
+      }
+      if (dayWins.length) {
+        body += `<div class="review-field"><div class="rf-label">Wins</div>`;
+        dayWins.forEach(w => body += `<div style="font-size:0.8rem;color:var(--white);line-height:1.5;margin-top:6px;padding:8px 10px;background:rgba(201,168,76,0.07);border-radius:6px;">${w.text}</div>`);
+        body += `</div>`;
+      }
+      if (!ci && !dayAligns.length && !dayWins.length) {
+        body += `<div style="font-size:0.78rem;color:var(--text-light);padding:12px 0;">No data recorded for this day.</div>`;
+      }
+      body += `</div>`;
+    }
+
+    return `<div class="review-day" data-day="${ds}" onclick="toggleDayExpand('${ds}')">
+      <div class="review-day-header">
+        <div class="review-day-title">${isToday ? '→ ' : ''}Day ${dayN} — ${dateLabel(ds)}</div>
+        <div class="review-day-badges">${badges.join('')}</div>
+      </div>
+      ${body}
+    </div>`;
+  }).join('');
+}
+function toggleDayExpand(ds) {
+  if (ds > todayStr()) return;
+  expandedDay = expandedDay === ds ? null : ds;
+  renderOverview();
+}
+
+// ========== INIT ==========
+renderStreak();
+renderGrid();
+
+// ========== TOAST ==========
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
